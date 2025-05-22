@@ -1,0 +1,32 @@
+# === Node dependencies ===
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# === Build outputs ===
+build/
+dist/
+frontend/build/
+
+# === Environment files ===
+.env
+*.env
+frontend/.env
+backend/.env
+
+# === Logs ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# === Misc system files ===
+.DS_Store
+Thumbs.db
+
+# === Testing ===
+coverage/
+
+# === Others ===
+/.pnp
+.pnp.js
