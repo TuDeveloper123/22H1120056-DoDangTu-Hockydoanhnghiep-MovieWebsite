@@ -6,6 +6,7 @@ import { FaBars, FaTimes } from "react-icons/fa";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import ROLE from '../common/role';
+import { CgSpinner } from 'react-icons/cg';
 
 const AdminPanel = () => {
     const user = useSelector(state => state?.user?.user);
@@ -13,7 +14,6 @@ const AdminPanel = () => {
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // --- Cập nhật logic hiển thị menu ---
     const allNavLinks = [
         { to: "all-users", label: "Tất cả người dùng", roles: [ROLE.ADMIN] },
         { to: "all-products", label: "Quản lý phim", roles: [ROLE.ADMIN] },
@@ -21,14 +21,17 @@ const AdminPanel = () => {
         { to: "ticket-status", label: "Quản lý Check-in", roles: [ROLE.ADMIN, ROLE.STAFF] },
         { to: "deleted-movies", label: "Phim đã xóa", roles: [ROLE.ADMIN] },
     ];
-    
-    // Lọc các link dựa trên vai trò của người dùng
+
     const navLinks = user ? allNavLinks.filter(link => link.roles.includes(user.role)) : [];
-    
+
+    // *** SỬA ĐỔI CHÍNH Ở ĐÂY ***
+    // Logic này sẽ kiểm tra và cho phép cả ADMIN và STAFF ở lại trang.
     useEffect(() => {
-        // Chuyển hướng nếu không phải Admin hoặc Staff
-        if (user && user.role !== ROLE.ADMIN && user.role !== ROLE.STAFF) {
-            navigate("/");
+        if (user) {
+            const isAllowed = user.role === ROLE.ADMIN || user.role === ROLE.STAFF;
+            if (!isAllowed) {
+                navigate("/");
+            }
         }
     }, [user, navigate]);
 
@@ -36,10 +39,13 @@ const AdminPanel = () => {
         setSidebarOpen(false);
     }, [location.pathname]);
 
+    // *** BẢO VỆ RENDER ***
+    // Logic này đảm bảo component không render nội dung cho đến khi có thông tin user
+    // và user đó có quyền truy cập.
     if (!user || (user.role !== ROLE.ADMIN && user.role !== ROLE.STAFF)) {
         return (
             <div className="min-h-[calc(100vh-120px)] flex items-center justify-center">
-                {/* Có thể thêm spinner ở đây */}
+                <CgSpinner size={40} className="animate-spin text-red-600" />
             </div>
         );
     }
