@@ -28,6 +28,7 @@ const router = createBrowserRouter([
             { path : "sign-up", element : <SignUp/> },
             { path : "product-category", element : <CategoryProduct/> },
             { path : "product/:id", element : <ProductDetails/> },
+            { path : 'booking/:id/:cinema/:showtime', element: <BookingPage /> },
             { path : 'booking/:id', element: <BookingPage /> },
             { path : 'my-bookings', element: <MyBookings /> }, // Thêm route Lịch sử vé của User
             { path : 'my-account', element: <MyAccount /> },
@@ -36,12 +37,11 @@ const router = createBrowserRouter([
                 path : "admin-panel",
                 element : <AdminPanel/>,
                 children : [
-                    // Redirect /admin-panel to /admin-panel/all-products by default (optional)
-                    // { index: true, element: <Navigate to="all-products" replace /> },
                     { path : "all-users", element : <AllUsers/> },
                     { path : "all-products", element : <AllProducts/> },
                     { path: "booking-history", element: <BookingHistory /> },
                     { path: "ticket-status", element: <TicketStatusManagement /> },
+                    { path : 'booking/:id/:cinema/:showtime', element: <BookingPage /> },
                     { path: "deleted-movies", element: <DeletedMovies /> }
                 ]
             },

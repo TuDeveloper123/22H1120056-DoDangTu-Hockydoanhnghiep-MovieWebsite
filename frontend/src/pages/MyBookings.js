@@ -8,6 +8,7 @@ import displayINRCurrency from '../helpers/displayCurrency';
 import { Link } from 'react-router-dom';
 import { CgSpinner } from 'react-icons/cg'; // Icon loading
 import { FaTicketAlt, FaCalendarAlt, FaClock, FaChair, FaMapMarkerAlt, FaMoneyBillWave, FaCheckCircle, FaTimesCircle, FaQuestionCircle, FaBarcode } from 'react-icons/fa'; // Thêm icons
+import UpdatePasswordForm from '../components/UpdatePasswordForm';
 
 moment.locale('vi');
 
@@ -85,12 +86,10 @@ const MyBookings = () => {
                                         <img
                                             src={booking.movieId?.productImage?.[0]}
                                             alt={booking.movieId?.productName || 'Movie Poster'}
-                                            // Dùng object-cover để lấp đầy, thêm hiệu ứng khi hover
                                             className="object-cover w-full h-48 md:h-full transition-transform duration-300 ease-in-out hover:scale-105"
                                             loading="lazy"
                                         />
                                     </Link>
-                                    {/* Status Badge trên ảnh */}
                                     <div className={`absolute top-2 left-2 text-xs font-bold px-2.5 py-1 rounded-full flex items-center shadow-sm ${statusInfo.style}`}>
                                          {statusInfo.icon} {statusInfo.label}
                                      </div>
@@ -99,18 +98,17 @@ const MyBookings = () => {
                                 {/* Chi tiết vé */}
                                 <div className="p-5 md:p-6 flex-grow flex flex-col justify-between">
                                     <div>
-                                        {/* Tên phim */}
                                         <h2 className="text-xl font-semibold mb-2 text-gray-800 hover:text-red-600 transition-colors">
                                             <Link to={`/product/${booking.movieId?._id}`}>
                                                 {booking.movieId?.productName || 'Phim không xác định'}
                                             </Link>
                                         </h2>
-                                        {/* Thông tin Rạp & Suất chiếu */}
                                         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm text-gray-600 mb-3">
-                                            <p className="flex items-center"><FaMapMarkerAlt className="mr-1.5 text-gray-400"/> Rạp: <span className='font-medium text-gray-700 ml-1'>{booking.movieId?.cinemaHall || 'N/A'}</span></p>
+                                            {/* ===== THAY ĐỔI Ở ĐÂY ===== */}
+                                            {/* Đọc 'booking.cinemaName' thay vì 'booking.movieId.cinemaHall' */}
+                                            <p className="flex items-center"><FaMapMarkerAlt className="mr-1.5 text-gray-400"/> Rạp: <span className='font-medium text-gray-700 ml-1'>{booking.cinemaName || 'N/A'}</span></p>
                                             <p className="flex items-center"><FaClock className="mr-1.5 text-gray-400"/> Suất: <span className='font-medium text-gray-700 ml-1'>{booking.showtime}</span></p>
                                         </div>
-                                        {/* Ghế */}
                                         <p className="mb-3 flex items-start">
                                             <FaChair className="mr-1.5 text-gray-400 mt-0.5 flex-shrink-0"/>
                                             <span className="text-sm text-gray-600 mr-1">Ghế:</span>
@@ -118,9 +116,8 @@ const MyBookings = () => {
                                                 {booking.seats?.map(seat => <span key={seat} className="bg-red-50 px-1.5 py-0.5 rounded border border-red-100">{seat}</span>) || 'N/A'}
                                             </span>
                                         </p>
-                                        {/* Bắp nước */}
                                         <p className="text-sm text-gray-600 mb-3 flex items-center">
-                                            <FaTicketAlt className="mr-1.5 text-gray-400 transform rotate-90"/> {/* Icon tạm */}
+                                            <FaTicketAlt className="mr-1.5 text-gray-400 transform rotate-90"/>
                                             Bắp/Nước:
                                             <span className='font-medium text-gray-700 ml-1'>
                                                 {booking.concessions?.popcorn && ' Bắp'}
@@ -130,21 +127,16 @@ const MyBookings = () => {
                                             </span>
                                         </p>
                                     </div>
-
-                                    {/* Phần dưới của thẻ */}
                                     <div className='mt-4 pt-4 border-t border-gray-200'>
                                         <div className="flex flex-wrap justify-between items-center gap-y-2 gap-x-4">
-                                            {/* Tổng tiền */}
                                              <p className="flex items-center text-sm text-gray-600">
                                                  <FaMoneyBillWave className="mr-1.5 text-green-500"/> Tổng tiền:
                                                  <span className='font-bold text-lg text-green-600 ml-1'>{displayINRCurrency(booking.totalAmount)}</span>
                                              </p>
-                                             {/* Ngày đặt */}
                                             <p className="flex items-center text-xs text-gray-500">
                                                  <FaCalendarAlt className="mr-1.5"/> Ngày đặt: {moment(booking.createdAt).format('L')}
                                             </p>
                                         </div>
-                                        {/* Mã vé */}
                                         <p className="mt-3 text-sm text-gray-600 flex items-center">
                                             <FaBarcode className="mr-1.5 text-gray-400"/> Mã vé:
                                              <span className='ml-1 font-mono text-sm bg-gray-100 px-2 py-1 rounded border border-gray-200 text-gray-800 tracking-wider'>{booking.ticketCode}</span>
@@ -152,7 +144,6 @@ const MyBookings = () => {
                                     </div>
                                 </div>
                             </div>
-                            // --- Hết thẻ vé ---
                         );
                     })}
                 </div>
@@ -162,4 +153,3 @@ const MyBookings = () => {
 };
 
 export default MyBookings;
-// --- END OF FILE pages/MyBookings.js ---

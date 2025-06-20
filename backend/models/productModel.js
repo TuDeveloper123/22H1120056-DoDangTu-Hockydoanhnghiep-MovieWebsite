@@ -1,8 +1,15 @@
 const mongoose = require('mongoose')
 
+// Cấu trúc mới cho suất chiếu
+const showingSchema = mongoose.Schema({
+    cinemaName: { type: String, required: true, trim: true },
+    showtimes: { type: [String], required: true } // Mảng các giờ chiếu, ví dụ: ["19:00", "21:00"]
+});
+
+
 const productSchema = mongoose.Schema({
     productName : String, // Tên phim
-    brandName : String,   // Quốc gia / Đạo diễn (Bạn có thể đổi tên trường nếu muốn rõ ràng hơn)
+    brandName : String,   // Quốc gia / Đạo diễn
     category : String,    // Thể loại
     productImage : [],    // Poster phim
     description : String, // Mô tả phim
@@ -13,20 +20,19 @@ const productSchema = mongoose.Schema({
         enum: ['showing', 'upcoming', 'early_access'], // đang chiếu, sắp chiếu, chiếu sớm
         default: 'upcoming'
     },
-    cinemaHall: {         // Số rạp / Tên rạp
-        type: String,
-        default: "Rạp 1"
-    },
-    isDeleted: { // <-- Thêm trường này
+    // cinemaHall đã được thay thế bằng cấu trúc showings mới
+    showings: [showingSchema], // <-- THAY ĐỔI QUAN TRỌNG: Mảng các rạp và suất chiếu
+
+    isDeleted: {
         type: Boolean,
         default: false,
-        index: true // Index để query nhanh hơn
+        index: true
     }
 },{
     timestamps : true
 })
 
 
-const productModel = mongoose.model("product",productSchema) // Giữ tên model là "product" cho tiện
+const productModel = mongoose.model("product",productSchema)
 
 module.exports = productModel

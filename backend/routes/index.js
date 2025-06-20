@@ -81,7 +81,7 @@ const express = require('express')
     router.get("/admin/pending-tickets", authToken, getPendingTicketsController); // Admin xem vé chờ check-in
     router.post("/admin/checkin-ticket", authToken, checkInTicketController); // Admin check-in vé
     router.get("/my-bookings", authToken, getMyBookingsController);
-    router.get("/booked-seats/:movieId/:showtime", getBookedSeatsController);
+    router.get("/booked-seats/:movieId/:cinemaName/:showtime", getBookedSeatsController);
 
     // --- Comment Routes ---
     router.post("/comments", authToken, addCommentController);           // Thêm comment mới (cần đăng nhập)

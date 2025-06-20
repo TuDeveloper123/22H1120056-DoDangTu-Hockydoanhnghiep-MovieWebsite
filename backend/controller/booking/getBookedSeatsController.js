@@ -2,27 +2,27 @@ const bookingModel = require("../../models/bookingModel");
 
 const getBookedSeatsController = async (req, res) => {
     try {
-        const { movieId, showtime } = req.params;
+        // Nhận thêm cinemaName từ params
+        const { movieId, cinemaName, showtime } = req.params;
 
-        if (!movieId || !showtime) {
-            return res.status(400).json({ message: "Thiếu thông tin phim hoặc suất chiếu." });
+        if (!movieId || !cinemaName || !showtime) {
+            return res.status(400).json({ message: "Thiếu thông tin phim, rạp hoặc suất chiếu." });
         }
 
-        // Tìm tất cả các booking cho phim và suất chiếu đó mà chưa bị hủy
         const bookings = await bookingModel.find({
             movieId: movieId,
-            showtime: showtime,
-            bookingStatus: { $ne: 'cancelled' } // Chỉ lấy vé chưa bị hủy
-        }).select('seats'); // Chỉ lấy trường seats
+            cinemaName: decodeURIComponent(cinemaName), // Giải mã cinemaName
+            showtime: decodeURIComponent(showtime),     // Giải mã showtime
+            bookingStatus: { $ne: 'cancelled' }
+        }).select('seats');
 
-        // Gộp tất cả các mảng seats thành một mảng duy nhất
         const bookedSeats = bookings.reduce((acc, booking) => {
             return acc.concat(booking.seats);
         }, []);
 
         res.json({
             message: "Lấy danh sách ghế đã đặt thành công.",
-            data: bookedSeats, // Mảng các chuỗi ghế, ví dụ: ["A01", "B05", "A02"]
+            data: bookedSeats,
             success: true,
             error: false
         });

@@ -5,7 +5,9 @@ const getMyBookingsController = async (req, res) => {
         const currentUserId = req.userId; // Lấy từ middleware authToken
 
         const bookings = await bookingModel.find({ userId: currentUserId })
-            .populate('movieId', 'productName cinemaHall productImage showtime') // Populate thông tin cần thiết của phim
+            // Bỏ 'cinemaHall' và 'showtime' vì chúng không còn trong productModel
+            // Giờ chúng ta chỉ cần thông tin cơ bản của phim
+            .populate('movieId', 'productName productImage') // <-- THAY ĐỔI Ở ĐÂY
             .sort({ createdAt: -1 });
 
         res.json({
