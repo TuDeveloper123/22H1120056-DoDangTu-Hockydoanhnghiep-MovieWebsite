@@ -1,4 +1,5 @@
-// QUẢN LÝ CHECK-IN ADMIN
+// File Path: frontend/src/pages/TicketStatusManagement.js
+
 import React, { useEffect, useState } from 'react';
 import SummaryApi from '../common';
 import { toast } from 'react-toastify';
@@ -10,7 +11,7 @@ moment.locale('vi');
 const TicketStatusManagement = () => {
     const [pendingTickets, setPendingTickets] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [checkingInId, setCheckingInId] = useState(null); // State để disable nút khi đang xử lý
+    const [checkingInId, setCheckingInId] = useState(null);
 
     const fetchPendingTickets = async () => {
         setLoading(true);
@@ -37,8 +38,8 @@ const TicketStatusManagement = () => {
     }, []);
 
     const handleCheckIn = async (bookingId) => {
-        if (checkingInId) return; // Không cho check-in nếu đang xử lý vé khác
-        setCheckingInId(bookingId); // Đánh dấu đang check-in vé này
+        if (checkingInId) return;
+        setCheckingInId(bookingId);
         try {
             const response = await fetch(SummaryApi.checkInTicket.url, {
                 method: SummaryApi.checkInTicket.method,
@@ -49,7 +50,6 @@ const TicketStatusManagement = () => {
             const dataResponse = await response.json();
             if (dataResponse.success) {
                 toast.success(dataResponse.message);
-                // Cập nhật lại danh sách vé chờ bằng cách lọc bỏ vé vừa check-in
                 setPendingTickets(prev => prev.filter(ticket => ticket._id !== bookingId));
             } else {
                 toast.error("Check-in thất bại: " + dataResponse.message);
@@ -57,7 +57,7 @@ const TicketStatusManagement = () => {
         } catch (error) {
             toast.error("Lỗi kết nối khi check-in: " + error.message);
         } finally {
-             setCheckingInId(null); // Hoàn thành check-in
+             setCheckingInId(null);
         }
     };
 
@@ -93,7 +93,8 @@ const TicketStatusManagement = () => {
                                     <td>{index + 1}</td>
                                     <td>{ticket.userId?.name || 'N/A'}</td>
                                     <td>{ticket.movieId?.productName || 'N/A'}</td>
-                                    <td>{ticket.movieId?.cinemaHall || 'N/A'}</td>
+                                    {/* === SỬA Ở ĐÂY === */}
+                                    <td>{ticket.cinemaName || 'N/A'}</td> 
                                     <td>{ticket.seats?.join(', ')}</td>
                                     <td>{ticket.showtime}</td>
                                     <td className='font-mono text-xs'>{ticket.ticketCode}</td>
@@ -101,7 +102,7 @@ const TicketStatusManagement = () => {
                                     <td>
                                         <button
                                             onClick={() => handleCheckIn(ticket._id)}
-                                            disabled={checkingInId === ticket._id} // Disable nút khi đang xử lý
+                                            disabled={checkingInId === ticket._id}
                                             className={`bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors ${checkingInId === ticket._id ? 'opacity-50 cursor-wait' : ''}`}
                                         >
                                             {checkingInId === ticket._id ? 'Đang xử lý...' : 'Check-in'}

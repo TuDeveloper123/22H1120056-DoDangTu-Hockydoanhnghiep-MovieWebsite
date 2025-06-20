@@ -1,10 +1,13 @@
-const uploadProductPermission = require('../../helpers/permission');
+// File Path: backend/controllers/product/restoreProductController.js
+
+const { isAdmin } = require('../../helpers/permission');
 const productModel = require('../../models/productModel');
 
 async function restoreProductController(req, res) {
     try {
-        if (!uploadProductPermission(req.userId)) {
-            throw new Error("Yêu cầu bị từ chối");
+        // Chỉ Admin mới có quyền khôi phục
+        if (!(await isAdmin(req.userId))) {
+            throw new Error("Yêu cầu bị từ chối. Cần quyền Admin.");
         }
 
         const { productId } = req.params;
@@ -31,7 +34,8 @@ async function restoreProductController(req, res) {
         });
 
     } catch (err) {
-        res.status(400).json({
+        const statusCode = err.message.includes("Yêu cầu bị từ chối") ? 403 : 400;
+        res.status(statusCode).json({
             message: err.message || err,
             error: true,
             success: false

@@ -1,7 +1,9 @@
+// File Path: frontend/src/pages/AdminPanel.js
+
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FaBars, FaTimes } from "react-icons/fa"; // Giữ lại FaBars, FaTimes từ /fa
-import { FaRegCircleUser } from "react-icons/fa6"; // Import FaRegCircleUser từ /fa6
+import { FaBars, FaTimes } from "react-icons/fa";
+import { FaRegCircleUser } from "react-icons/fa6";
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import ROLE from '../common/role';
 
@@ -11,32 +13,38 @@ const AdminPanel = () => {
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    // --- Cập nhật logic hiển thị menu ---
+    const allNavLinks = [
+        { to: "all-users", label: "Tất cả người dùng", roles: [ROLE.ADMIN] },
+        { to: "all-products", label: "Quản lý phim", roles: [ROLE.ADMIN] },
+        { to: "booking-history", label: "Lịch sử đặt vé", roles: [ROLE.ADMIN, ROLE.STAFF] },
+        { to: "ticket-status", label: "Quản lý Check-in", roles: [ROLE.ADMIN, ROLE.STAFF] },
+        { to: "deleted-movies", label: "Phim đã xóa", roles: [ROLE.ADMIN] },
+    ];
+    
+    // Lọc các link dựa trên vai trò của người dùng
+    const navLinks = user ? allNavLinks.filter(link => link.roles.includes(user.role)) : [];
+    
     useEffect(() => {
-        if (user && user?.role !== ROLE.ADMIN) { navigate("/"); }
-        // else if (!user && location.pathname.startsWith('/admin-panel')) { navigate("/login"); }
-    }, [user, navigate, location.pathname]);
+        // Chuyển hướng nếu không phải Admin hoặc Staff
+        if (user && user.role !== ROLE.ADMIN && user.role !== ROLE.STAFF) {
+            navigate("/");
+        }
+    }, [user, navigate]);
 
     useEffect(() => {
         setSidebarOpen(false);
     }, [location.pathname]);
 
-    if (!user || user?.role !== ROLE.ADMIN) {
+    if (!user || (user.role !== ROLE.ADMIN && user.role !== ROLE.STAFF)) {
         return (
             <div className="min-h-[calc(100vh-120px)] flex items-center justify-center">
-                {/* Ví dụ: <CgSpinner size={40} className="animate-spin text-red-600" /> */}
+                {/* Có thể thêm spinner ở đây */}
             </div>
         );
     }
 
-    const navLinks = [
-        { to: "all-users", label: "Tất cả người dùng" },
-        { to: "all-products", label: "Quản lý phim" },
-        { to: "booking-history", label: "Lịch sử đặt vé" },
-        { to: "ticket-status", label: "Quản lý Check-in" },
-        { to: "deleted-movies", label: "Phim đã xóa" },
-    ];
-
-    const activeStyle = "bg-red-100 text-red-700 border-r-4 border-red-500 font-semibold"; // Thêm font-semibold
+    const activeStyle = "bg-red-100 text-red-700 border-r-4 border-red-500 font-semibold";
     const defaultStyle = "text-gray-600 hover:bg-gray-100 hover:text-gray-800";
 
     return (
@@ -56,18 +64,13 @@ const AdminPanel = () => {
                     sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
                 } md:translate-x-0 md:static md:shadow-lg md:w-60 transition-transform duration-300 ease-in-out`}
             >
-                <div className="md:hidden flex justify-end p-3">
-                     <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100">
-                         <FaTimes size={20}/>
-                     </button>
-                </div>
-                <div className='h-36 flex justify-center items-center flex-col border-b border-gray-200 p-4'>
-                    <div className='cursor-pointer relative flex justify-center mb-2.5'> {/* Bỏ text-5xl nếu dùng ảnh/icon custom */}
+                <div className="h-36 flex justify-center items-center flex-col border-b border-gray-200 p-4">
+                    <div className='cursor-pointer relative flex justify-center mb-2.5'>
                         {user?.profilePic ? (
                             <img src={user?.profilePic} className='w-20 h-20 rounded-full object-cover border-2 border-red-100 shadow-sm' alt={user?.name} />
                         ) : (
                             <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-400">
-                                <FaRegCircleUser size={40}/> {/* Icon này đã được import đúng */}
+                                <FaRegCircleUser size={40}/>
                             </div>
                         )}
                     </div>
@@ -92,7 +95,7 @@ const AdminPanel = () => {
                 </nav>
             </aside>
 
-            {/* Overlay khi sidebar mở trên mobile */}
+             {/* Overlay */}
             {sidebarOpen && (
                 <div
                     className="md:hidden fixed inset-0 bg-black bg-opacity-40 z-10"

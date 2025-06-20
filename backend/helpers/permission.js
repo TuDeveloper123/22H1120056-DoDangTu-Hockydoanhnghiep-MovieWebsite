@@ -1,14 +1,26 @@
-const userModel = require("../models/userModel")
+// File Path: backend/helpers/permission.js
 
-const uploadProductPermission = async(userId) => {
-    const user = await userModel.findById(userId)
+const userModel = require("../models/userModel");
 
-    if(user.role === 'ADMIN'){
-        return true
+const isAdmin = async (userId) => {
+    try {
+        const user = await userModel.findById(userId);
+        return user?.role === 'ADMIN';
+    } catch (error) {
+        return false;
     }
+};
 
-    return false
-}
+const isStaffOrAdmin = async (userId) => {
+    try {
+        const user = await userModel.findById(userId);
+        return user && (user.role === 'ADMIN' || user.role === 'STAFF');
+    } catch (error) {
+        return false;
+    }
+};
 
-
-module.exports = uploadProductPermission
+module.exports = {
+    isAdmin,
+    isStaffOrAdmin
+};

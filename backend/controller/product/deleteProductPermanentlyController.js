@@ -1,10 +1,13 @@
-const uploadProductPermission = require('../../helpers/permission');
+// File Path: backend/controllers/product/deleteProductPermanentlyController.js
+
+const { isAdmin } = require('../../helpers/permission');
 const productModel = require('../../models/productModel');
 
 async function deleteProductPermanentlyController(req, res) {
     try {
-        if (!uploadProductPermission(req.userId)) {
-            throw new Error("Yêu cầu bị từ chối");
+        // Chỉ Admin mới có quyền xóa vĩnh viễn
+        if (!(await isAdmin(req.userId))) {
+            throw new Error("Yêu cầu bị từ chối. Cần quyền Admin.");
         }
 
         const { productId } = req.params;
@@ -21,13 +24,14 @@ async function deleteProductPermanentlyController(req, res) {
 
         res.json({
             message: "Xóa phim vĩnh viễn thành công",
-            data: deletedProduct, // Có thể trả về phim đã xóa nếu cần
+            data: deletedProduct,
             success: true,
             error: false
         });
 
     } catch (err) {
-        res.status(400).json({
+        const statusCode = err.message.includes("Yêu cầu bị từ chối") ? 403 : 400;
+        res.status(statusCode).json({
             message: err.message || err,
             error: true,
             success: false

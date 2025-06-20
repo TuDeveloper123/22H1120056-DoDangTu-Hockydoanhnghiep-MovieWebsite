@@ -1,32 +1,35 @@
-const uploadProductPermission = require("../../helpers/permission")
-const productModel = require("../../models/productModel")
+// File Path: backend/controllers/product/uploadProduct.js
 
-async function UploadProductController(req,res){
-    try{
-        const sessionUserId = req.userId
+const { isAdmin } = require("../../helpers/permission");
+const productModel = require("../../models/productModel");
 
-        if(!uploadProductPermission(sessionUserId)){
-            throw new Error("Yêu cầu bị từ chối")
+async function UploadProductController(req, res) {
+    try {
+        const sessionUserId = req.userId;
+
+        // Chỉ Admin mới có quyền thêm phim
+        if (!(await isAdmin(sessionUserId))) {
+            throw new Error("Yêu cầu bị từ chối. Cần quyền Admin.");
         }
 
-        // req.body bây giờ sẽ chứa cấu trúc showings phức tạp
-        const uploadProduct = new productModel(req.body)
-        const saveProduct = await uploadProduct.save()
+        const uploadProduct = new productModel(req.body);
+        const saveProduct = await uploadProduct.save();
 
         res.status(201).json({
-            message : "Thêm phim thành công",
-            error : false,
-            success : true,
-            data : saveProduct
-        })
+            message: "Thêm phim thành công",
+            error: false,
+            success: true,
+            data: saveProduct
+        });
 
-    }catch(err){
-        res.status(400).json({
-            message : err.message || err,
-            error : true,
-            success : false
-        })
+    } catch (err) {
+        const statusCode = err.message.includes("Yêu cầu bị từ chối") ? 403 : 400;
+        res.status(statusCode).json({
+            message: err.message || err,
+            error: true,
+            success: false
+        });
     }
 }
 
-module.exports = UploadProductController
+module.exports = UploadProductController;
