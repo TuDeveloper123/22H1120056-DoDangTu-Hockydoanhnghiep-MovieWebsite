@@ -16,12 +16,13 @@ const express = require('express')
     const updateUser = require('../controller/user/updateUser')
     const checkEmailController = require('../controller/user/checkEmailController')
     const resetPasswordController = require('../controller/user/resetPasswordController')
+    const updatePasswordController = require('../controller/user/updatePasswordController');
 
     // Product (Movie) Controllers
     const UploadProductController = require('../controller/product/uploadProduct')
     const getProductController = require('../controller/product/getProduct')
     const updateProductController = require('../controller/product/updateProduct')
-    const getCategoryProduct = require('../controller/product/getCategoryProductOne') // Có thể đổi tên file này cho rõ nghĩa hơn
+    const getCategoryProduct = require('../controller/product/getCategoryProductOne') 
     const getCategoryWiseProduct = require('../controller/product/getCategoryWiseProduct')
     const getProductDetails = require('../controller/product/getProductDetails')
     const searchProduct = require('../controller/product/searchProduct')
@@ -51,6 +52,7 @@ const express = require('express')
     router.get("/userLogout",userLogout)
     router.post("/check-email", checkEmailController)
     router.post("/reset-password", resetPasswordController)
+    router.post("/update-password", authToken, updatePasswordController)
 
     // Admin Panel User Routes
     router.get("/all-user",authToken,allUsers)

@@ -106,6 +106,13 @@ const Header = () => {
                     </Link>
                   )}
                   <Link
+                        to={"/my-account"} // Link đến trang tài khoản
+                        className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
+                        onClick={closeMenu}
+                    >
+                        Tài khoản của tôi
+                    </Link>
+                  <Link
                         to={"/my-bookings"} // Link đến trang lịch sử đặt vé
                         className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100' // Style link
                         onClick={closeMenu} // Đóng menu khi click

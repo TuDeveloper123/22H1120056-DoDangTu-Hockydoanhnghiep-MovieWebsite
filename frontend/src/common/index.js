@@ -96,6 +96,10 @@ const backendDomin = "http://localhost:8080" // Đảm bảo đúng port backend
             url : `${backendDomin}/api/reset-password`,
             method : "post"
         },
+        updatePassword : {
+            url : `${backendDomin}/api/update-password`,
+            method : "post"
+        },
 
 
         // *** API Xóa/Khôi Phục Phim ***
