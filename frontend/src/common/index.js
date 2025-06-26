@@ -73,8 +73,6 @@ const backendDomin = "http://localhost:8080" // Đảm bảo đúng port backend
             method: 'get'
         },
         getBookedSeats: {
-            // Method GET nên không cần method: 'get'
-            // URL sẽ được tạo động trong component
             url: `${backendDomin}/api/booked-seats`
         },
         getPendingTickets : {
@@ -100,7 +98,11 @@ const backendDomin = "http://localhost:8080" // Đảm bảo đúng port backend
             url : `${backendDomin}/api/update-password`,
             method : "post"
         },
-
+        // Profile
+        updateProfile: {
+        url: `${backendDomin}/api/update-profile`,
+        method: "post"
+    },
 
         // *** API Xóa/Khôi Phục Phim ***
         softDeleteProduct: {

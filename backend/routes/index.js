@@ -17,6 +17,7 @@ const express = require('express')
     const checkEmailController = require('../controller/user/checkEmailController')
     const resetPasswordController = require('../controller/user/resetPasswordController')
     const updatePasswordController = require('../controller/user/updatePasswordController');
+    const updateProfileController = require('../controller/user/updateProfileController');
 
     // Product (Movie) Controllers
     const UploadProductController = require('../controller/product/uploadProduct')
@@ -53,6 +54,7 @@ const express = require('express')
     router.post("/check-email", checkEmailController)
     router.post("/reset-password", resetPasswordController)
     router.post("/update-password", authToken, updatePasswordController)
+    router.post("/update-profile", authToken, updateProfileController); // Cập nhật ảnh đại diện
 
     // Admin Panel User Routes
     router.get("/all-user",authToken,allUsers)
