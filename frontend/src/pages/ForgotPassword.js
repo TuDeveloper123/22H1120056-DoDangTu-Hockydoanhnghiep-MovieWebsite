@@ -1,3 +1,5 @@
+// File Path: frontend/src/pages/ForgotPassword.js
+
 import React, { useState } from 'react'
 import loginIcons from '../assets/signin.gif'
 import { FaEye } from "react-icons/fa";
@@ -46,12 +48,9 @@ const ForgotPassword = () => {
       const dataApi = await dataResponse.json()
 
       if (dataApi.success) {
-        toast.success("Mã OTP đã được gửi!")
-        // In a real system, the OTP would be sent via email
-        // For demo purposes, we're showing it in a toast notification
-        toast.info(`Mã OTP của bạn là: ${dataApi.otp}`)
-        setServerOtp(dataApi.otp)
-        setStep(2) // Move to OTP verification step
+        toast.success(dataApi.message); // Thông báo OTP đã được gửi qua email
+        setServerOtp(dataApi.otp);
+        setStep(2);
       } else {
         toast.error(dataApi.message)
       }
@@ -152,7 +151,7 @@ const ForgotPassword = () => {
                     required
                     className='w-full h-full outline-none bg-transparent' />
                 </div>
-                <p className='text-sm text-gray-500 mt-1'>Vui lòng nhập mã OTP đã được hiển thị.</p>
+                <p className='text-sm text-gray-500 mt-1'>Vui lòng kiểm tra email và nhập mã OTP đã được gửi.</p>
               </div>
 
               <button className='bg-red-600 hover:bg-red-700 text-white px-6 py-2 w-full max-w-[150px] rounded-full hover:scale-110 transition-all mx-auto block mt-4'>
