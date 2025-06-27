@@ -18,6 +18,7 @@ const express = require('express')
     const resetPasswordController = require('../controller/user/resetPasswordController')
     const updatePasswordController = require('../controller/user/updatePasswordController');
     const updateProfileController = require('../controller/user/updateProfileController');
+    const deleteUserController = require('../controller/user/deleteUser');
 
     // Product (Movie) Controllers
     const UploadProductController = require('../controller/product/uploadProduct')
@@ -59,6 +60,7 @@ const express = require('express')
     // Admin Panel User Routes
     router.get("/all-user",authToken,allUsers)
     router.post("/update-user",authToken,updateUser) // Dùng để đổi role
+    router.post("/delete-user", authToken, deleteUserController)
 
     // Product (Movie) Routes
     router.post("/upload-product",authToken,UploadProductController) // Đổi thành upload-movie nếu muốn

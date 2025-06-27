@@ -25,6 +25,10 @@ const backendDomin = "http://localhost:8080" // Đảm bảo đúng port backend
             url : `${backendDomin}/api/update-user`,
             method : "post"
         },
+        deleteUser : { // <<< THÊM OBJECT NÀY
+        url : `${backendDomin}/api/delete-user`,
+        method : "post"
+        },
         // --- Product (Movie) APIs ---
         uploadProduct : { // Đổi tên thành uploadMovie nếu muốn
             url : `${backendDomin}/api/upload-product`,
