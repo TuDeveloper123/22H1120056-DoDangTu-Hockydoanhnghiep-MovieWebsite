@@ -12,8 +12,8 @@ const createBookingController = async (req, res) => {
             throw new Error("Thông tin đặt vé không đầy đủ hoặc không hợp lệ.");
         }
 
-        if (seats.length > 3) {
-             throw new Error("Chỉ được chọn tối đa 3 ghế.");
+        if (seats.length > 4) {
+             throw new Error("Chỉ được chọn tối đa 4 ghế.");
         }
 
         const movie = await productModel.findById(movieId);

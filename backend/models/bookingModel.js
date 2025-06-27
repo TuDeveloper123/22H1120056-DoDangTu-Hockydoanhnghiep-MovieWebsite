@@ -18,7 +18,7 @@ const bookingSchema = new mongoose.Schema({
     seats: {
         type: [String],
         required: true,
-        validate: [arrayLimit, '{PATH} tối đa 3 ghế']
+        validate: [arrayLimit, '{PATH} tối đa 4 ghế']
     },
     showtime: {
         type: String,
@@ -47,7 +47,7 @@ const bookingSchema = new mongoose.Schema({
 });
 
 function arrayLimit(val) {
-  return val.length <= 3;
+  return val.length <= 4;
 }
 
 const bookingModel = mongoose.model("Booking", bookingSchema);
