@@ -1,3 +1,5 @@
+// File Path: frontend/src/pages/BookingPage.js
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import SummaryApi from '../common';
@@ -9,10 +11,11 @@ const SEAT_PRICE = 45000;
 const POPCORN_PRICE = 50000;
 const DRINK_PRICE = 50000;
 const COMBO_PRICE = 90000;
-const MAX_SEATS = 3;
+const MAX_NORMAL_SEATS = 4; // Giới hạn ghế thường
+const MAX_COUPLE_SEATS = 4; // Giới hạn ghế đôi (2 cặp = 4 ghế)
+const COUPLE_SEAT_ROW = 'H'; // Hàng ghế đôi
 
 // --- Helper Function để tạo nhiều ghế hơn ---
-// Tăng số hàng và số ghế mỗi hàng để giống rạp thật
 const generateSeats = (rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], seatsPerRow = 16) => {
     const seats = [];
     rows.forEach(row => {
@@ -26,11 +29,25 @@ const generateSeats = (rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], seatsPer
 const ALL_SEATS = generateSeats();
 const seatColumns = 16; // Số cột để render grid, khớp với seatsPerRow ở trên
 
+// --- Helper Function để xử lý ghế đôi ---
+const getPartnerSeat = (seat) => {
+    if (!seat.startsWith(COUPLE_SEAT_ROW)) {
+        return null; // Không phải ghế đôi
+    }
+    const seatNumber = parseInt(seat.substring(1));
+    if (seatNumber % 2 === 1) {
+        // Là ghế lẻ, tìm ghế chẵn bên cạnh
+        return `${COUPLE_SEAT_ROW}${String(seatNumber + 1).padStart(2, '0')}`;
+    } else {
+        // Là ghế chẵn, tìm ghế lẻ bên cạnh
+        return `${COUPLE_SEAT_ROW}${String(seatNumber - 1).padStart(2, '0')}`;
+    }
+};
+
+
 // --- Component ---
 const BookingPage = () => {
-    // Nhận id phim, tên rạp và giờ chiếu từ URL
     const { id: movieId, cinema: cinemaNameParam, showtime: showtimeParam } = useParams();
-    // Giải mã các tham số từ URL (quan trọng vì tên rạp có thể chứa dấu cách)
     const cinemaName = decodeURIComponent(cinemaNameParam);
     const showtime = decodeURIComponent(showtimeParam);
 
@@ -47,12 +64,8 @@ const BookingPage = () => {
     const fetchBookingData = useCallback(async () => {
         setLoading(true);
         setLoadingSeats(true);
-        let movieDetailsLoaded = false;
-        let movieResponse;
-
         try {
-            // Fetch movie details
-            movieResponse = await fetch(SummaryApi.productDetails.url, {
+            const movieResponse = await fetch(SummaryApi.productDetails.url, {
                 method: SummaryApi.productDetails.method,
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ productId: movieId })
@@ -61,43 +74,23 @@ const BookingPage = () => {
 
             if (movieDataResponse.success) {
                 setMovie(movieDataResponse.data);
-                movieDetailsLoaded = true;
+                const url = `${SummaryApi.getBookedSeats.url}/${movieId}/${encodeURIComponent(cinemaName)}/${encodeURIComponent(showtime)}`;
+                const bookedSeatsResponse = await fetch(url);
+                const bookedSeatsDataResponse = await bookedSeatsResponse.json();
+
+                if (bookedSeatsDataResponse.success) {
+                    setBookedSeats(bookedSeatsDataResponse.data);
+                }
             } else {
                 toast.error("Không thể tải thông tin phim.");
                 navigate('/');
-                setLoading(false);
-                return;
-            }
-
-            // Fetch booked seats chỉ khi movie details đã load thành công
-            if (movieDetailsLoaded) {
-                try {
-                    // Xây dựng URL động với các tham số đã được mã hóa
-                    const url = `${SummaryApi.getBookedSeats.url}/${movieId}/${encodeURIComponent(cinemaName)}/${encodeURIComponent(showtime)}`;
-                    const bookedSeatsResponse = await fetch(url);
-                    const bookedSeatsDataResponse = await bookedSeatsResponse.json();
-
-                    if (bookedSeatsDataResponse.success) {
-                        setBookedSeats(bookedSeatsDataResponse.data);
-                    } else {
-                        console.error("Lỗi lấy ghế đã đặt:", bookedSeatsDataResponse.message);
-                    }
-                } catch (seatError) {
-                    console.error("Lỗi kết nối khi lấy ghế đã đặt:", seatError.message);
-                } finally {
-                    setLoadingSeats(false);
-                }
             }
         } catch (error) {
             toast.error("Lỗi kết nối: " + error.message);
             navigate('/');
         } finally {
-            if (movieDetailsLoaded || (movieResponse && !movieResponse.ok)) {
-                setLoading(false);
-            }
-            if (!movieDetailsLoaded) {
-                setLoadingSeats(false);
-            }
+            setLoading(false);
+            setLoadingSeats(false);
         }
     }, [movieId, cinemaName, showtime, navigate]);
 
@@ -118,20 +111,67 @@ const BookingPage = () => {
         setTotalAmount(currentTotal);
     }, [selectedSeats, concessions]);
 
-    // --- Xử lý chọn ghế ---
+    // --- Xử lý chọn ghế (Logic mới cho giới hạn ghế thường và ghế đôi) ---
     const handleSeatChange = (event) => {
         const seatValue = event.target.value;
         if (bookedSeats.includes(seatValue)) return;
 
+        const isCoupleSeatClicked = seatValue.startsWith(COUPLE_SEAT_ROW);
+        const partnerSeat = getPartnerSeat(seatValue);
+
         setSelectedSeats(prevSeats => {
-            if (prevSeats.includes(seatValue)) {
-                return prevSeats.filter(seat => seat !== seatValue);
+            const currentSelected = new Set(prevSeats);
+
+            // Tách các ghế đã chọn hiện tại thành ghế thường và ghế đôi
+            const normalSeatsSelected = prevSeats.filter(s => !s.startsWith(COUPLE_SEAT_ROW));
+            const coupleSeatsSelected = prevSeats.filter(s => s.startsWith(COUPLE_SEAT_ROW));
+
+            // --- XỬ LÝ KHI BỎ CHỌN GHẾ ---
+            if (currentSelected.has(seatValue)) {
+                const newSeats = new Set(prevSeats);
+                newSeats.delete(seatValue);
+                // Nếu là ghế đôi, bỏ chọn cả ghế cặp
+                if (partnerSeat && newSeats.has(partnerSeat)) {
+                    newSeats.delete(partnerSeat);
+                }
+                return Array.from(newSeats).sort();
             }
-            if (prevSeats.length >= MAX_SEATS) {
-                toast.info(`Bạn chỉ có thể chọn tối đa ${MAX_SEATS} ghế.`);
-                return prevSeats;
+
+            // --- XỬ LÝ KHI CHỌN GHẾ MỚI ---
+            // 1. Trường hợp: Đang chọn ghế thường
+            if (!isCoupleSeatClicked) {
+                if (coupleSeatsSelected.length > 0) {
+                    toast.info("Bạn không thể chọn ghế thường khi đã chọn ghế đôi.");
+                    return prevSeats;
+                }
+                if (normalSeatsSelected.length >= MAX_NORMAL_SEATS) {
+                    toast.info(`Bạn chỉ có thể chọn tối đa ${MAX_NORMAL_SEATS} ghế thường.`);
+                    return prevSeats;
+                }
+                currentSelected.add(seatValue);
+                return Array.from(currentSelected).sort();
             }
-            return [...prevSeats, seatValue].sort();
+
+            // 2. Trường hợp: Đang chọn ghế đôi
+            if (isCoupleSeatClicked) {
+                if (normalSeatsSelected.length > 0) {
+                    toast.info("Bạn không thể chọn ghế đôi khi đã chọn ghế thường.");
+                    return prevSeats;
+                }
+                if (coupleSeatsSelected.length >= MAX_COUPLE_SEATS) {
+                    toast.info(`Bạn chỉ có thể chọn tối đa ${MAX_COUPLE_SEATS / 2} cặp ghế đôi.`);
+                    return prevSeats;
+                }
+                if (partnerSeat && !bookedSeats.includes(partnerSeat)) {
+                    currentSelected.add(seatValue);
+                    currentSelected.add(partnerSeat);
+                    return Array.from(currentSelected).sort();
+                } else {
+                    toast.error("Không thể chọn cặp ghế này.");
+                    return prevSeats;
+                }
+            }
+            return prevSeats;
         });
     };
 
@@ -152,7 +192,7 @@ const BookingPage = () => {
         const conflictSeats = selectedSeats.filter(seat => bookedSeats.includes(seat));
         if (conflictSeats.length > 0) {
             toast.error(`Ghế ${conflictSeats.join(', ')} vừa có người khác đặt. Vui lòng chọn lại.`);
-            fetchBookingData(); // Tải lại dữ liệu ghế
+            fetchBookingData();
             return;
         }
 
@@ -178,7 +218,7 @@ const BookingPage = () => {
             } else {
                 toast.error(`Đặt vé thất bại: ${dataResponse.message}`);
                 if (dataResponse.message.includes("đã có người đặt")) {
-                    fetchBookingData(); // Tải lại ghế nếu có lỗi trùng ghế
+                    fetchBookingData();
                 }
             }
         } catch (error) {
@@ -201,9 +241,10 @@ const BookingPage = () => {
             <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8'>
                 {/* --- Cột chọn ghế --- */}
                 <div className='lg:col-span-2 bg-white p-4 md:p-6 rounded-lg shadow-md'>
-                    <h2 className='text-xl font-semibold mb-4'>Chọn ghế (Tối đa {MAX_SEATS})</h2>
+                    <h2 className='text-xl font-semibold mb-4'>Chọn ghế</h2>
                     <div className='flex flex-wrap gap-x-4 gap-y-1 text-xs mb-4'>
-                        <div className='flex items-center gap-1'><span className='w-4 h-4 rounded border border-green-300 bg-green-100 block'></span> Ghế trống</div>
+                        <div className='flex items-center gap-1'><span className='w-4 h-4 rounded border border-green-300 bg-green-100 block'></span> Ghế thường</div>
+                        <div className='flex items-center gap-1'><span className='w-4 h-4 rounded border border-pink-300 bg-pink-100 block'></span> Ghế đôi</div>
                         <div className='flex items-center gap-1'><span className='w-4 h-4 rounded border border-red-700 bg-red-600 block'></span> Ghế đang chọn</div>
                         <div className='flex items-center gap-1'><span className='w-4 h-4 rounded border border-gray-500 bg-gray-400 block line-through'></span> Ghế đã đặt</div>
                     </div>
@@ -218,6 +259,8 @@ const BookingPage = () => {
                             {ALL_SEATS.map(seat => {
                                 const isSelected = selectedSeats.includes(seat);
                                 const isBooked = bookedSeats.includes(seat);
+                                const isCoupleSeat = seat.startsWith(COUPLE_SEAT_ROW);
+                                
                                 return (
                                     <button
                                         key={seat}
@@ -225,7 +268,7 @@ const BookingPage = () => {
                                         onClick={handleSeatChange}
                                         disabled={isBooked || loading}
                                         aria-pressed={isSelected}
-                                        aria-label={`Ghế ${seat} ${isBooked ? 'đã đặt' : isSelected ? 'đang chọn' : 'trống'}`}
+                                        aria-label={`Ghế ${seat} ${isBooked ? 'đã đặt' : isSelected ? 'đang chọn' : isCoupleSeat ? 'đôi' : 'thường'}`}
                                         className={`
                                             p-1 md:p-2 border rounded text-center text-xs font-medium transition-all duration-150 ease-in-out aspect-square flex items-center justify-center
                                             focus:outline-none focus:ring-2 focus:ring-offset-1
@@ -233,7 +276,9 @@ const BookingPage = () => {
                                                 ? 'bg-gray-400 text-gray-600 border-gray-500 cursor-not-allowed line-through'
                                                 : isSelected
                                                     ? 'bg-red-600 text-white border-red-700 ring-red-500'
-                                                    : 'bg-green-100 text-green-900 border-green-300 hover:bg-green-200 hover:border-green-400 ring-green-500'
+                                                    : isCoupleSeat
+                                                        ? 'bg-pink-100 text-pink-900 border-pink-300 hover:bg-pink-200 hover:border-pink-400 ring-pink-500'
+                                                        : 'bg-green-100 text-green-900 border-green-300 hover:bg-green-200 hover:border-green-400 ring-green-500'
                                             }
                                             ${loading ? 'opacity-70 cursor-wait' : ''}
                                         `}
@@ -245,7 +290,13 @@ const BookingPage = () => {
                         </div>
                     )}
                     <div className='mt-6 border-t pt-4'>
-                        <p className='font-medium'>Ghế đã chọn ({selectedSeats.length}/{MAX_SEATS}): <span className='text-red-600 font-semibold'>{selectedSeats.join(', ') || 'Chưa chọn'}</span></p>
+                        <p className='font-medium'>
+                            Ghế đã chọn: 
+                            <span className='text-red-600 font-semibold ml-2'>{selectedSeats.join(', ') || 'Chưa chọn'}</span>
+                        </p>
+                        <p className='text-xs text-gray-500 mt-1'>
+                            (Lưu ý: Chỉ được chọn tối đa {MAX_NORMAL_SEATS} ghế thường hoặc {MAX_COUPLE_SEATS / 2} cặp ghế đôi)
+                        </p>
                     </div>
                 </div>
 
